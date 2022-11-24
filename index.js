@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000
 
@@ -17,22 +17,21 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 
-
-
-
 async function run() {
     try {
         const fridgeCollection = client.db('puranaBazar').collection('AllFridge')
 
-        app.get('/category/:id', async (req,res) => {
+        app.get('/category/:id', async (req, res) => {
             const ID = req.params.id;
-            if(ID === 4) {
-                const query = {}
-            } else {
-                const query = {_id: ID}
+            const intId = parseInt(ID)
+            let query;
+            if (intId === 4) {
+                query = {}
             }
-            const query = {}
-            
+            else {
+                query = { category:  intId}
+            }
+
             const allFridge = await fridgeCollection.find(query).toArray();
             res.send(allFridge);
         })
@@ -45,10 +44,10 @@ async function run() {
 run().catch(console.log())
 
 
-app.get('/', (req,res)=> {
+app.get('/', (req, res) => {
     res.send("purana-bazar server is running")
 })
 
-app.listen(port, ()=> {
+app.listen(port, () => {
     console.log(`server is running on ${port}`);
 })
