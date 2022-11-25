@@ -19,6 +19,7 @@ async function run() {
     try {
         const fridgeCollection = client.db('puranaBazar').collection('AllFridge')
         const usersCollection = client.db('puranaBazar').collection('users')
+        const advertiseCollection = client.db('puranaBazar').collection('advertise')
 
         app.get('/category/:id', async (req, res) => {
             const ID = req.params.id;
@@ -41,14 +42,32 @@ async function run() {
             console.log(result);
         })
 
+        app.get('/myproducts', async (req,res) => {
+            const email = req.query.email
+            const query = {sellerEmail: email}
+            const result = await fridgeCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        app.post('/advertisement', async (req,res) => {
+            const id = req.query.id;
+            const filter = {
+                _id: id
+            }
+            const result = await fridgeCollection.find(filter);
+            const total = await advertiseCollection.insertOne(result);
+            res.send(total);
+
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body;
             const query = {
                 email: user.email
             }
             const alreadyAdd = await usersCollection.find(query).toArray();
-
-            if (alreadyAdd.length) {
+            console.log(alreadyAdd);
+            if (alreadyAdd.length >= 0) {
                 const message = `Already added`
                 return res.send({ acknowledged: false, message })
             }
