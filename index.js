@@ -67,6 +67,19 @@ async function run() {
             res.send(total);
         })
 
+        app.get('/allbuyers', async (req,res) => {
+            const filter = { role: "Buyer"}
+            const result = await usersCollection.find(filter).toArray()
+            res.send(result);
+        })
+
+        app.delete('/buyerDelete', async (req,res) => {
+            const id = req.query.id;
+            const filter = {_id: ObjectId(id)}
+            const result = await usersCollection.deleteOne(filter)
+            res.send(result);
+        })
+
         app.get('/currentusers', async (req,res) => {
             const email = req.query.email
             console.log(email);
