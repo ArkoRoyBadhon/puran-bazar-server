@@ -34,10 +34,27 @@ async function run() {
             res.send(allFridge);
         })
 
+        app.post('/addItem', async (req,res) => {
+            const item = req.body;
+            // const query = {}
+            const result = await fridgeCollection.insertOne(item)
+            console.log(result);
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body;
+            const query = {
+                email: user.email
+            }
+            const alreadyAdd = await usersCollection.find(query).toArray();
+
+            if (alreadyAdd.length) {
+                const message = `Already added`
+                return res.send({ acknowledged: false, message })
+            }
+
             const result = await usersCollection.insertOne(user);
-            res.send();
+            res.send(result);
         })
 
         app.get('/users', async (req, res) => {
