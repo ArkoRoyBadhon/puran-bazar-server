@@ -36,26 +36,26 @@ async function run() {
             res.send(allFridge);
         })
 
-        app.post('/addItem', async (req,res) => {
+        app.post('/addItem', async (req, res) => {
             const item = req.body;
             // const query = {}
             const result = await fridgeCollection.insertOne(item)
             // console.log(result);
         })
 
-        app.get('/myproducts', async (req,res) => {
+        app.get('/myproducts', async (req, res) => {
             const email = req.query.email
-            const query = {sellerEmail: email}
+            const query = { sellerEmail: email }
             const result = await fridgeCollection.find(query).toArray();
             res.send(result);
         })
 
-        
-        app.post('/advertisementpost', async (req,res) => {
+
+        app.post('/advertisementpost', async (req, res) => {
             const data = req.body;
             // console.log(data._id);
-            const respp = await advertiseCollection.find({_id: {$eq: data._id}}).toArray();
-            if(respp.length > 0) {
+            const respp = await advertiseCollection.find({ _id: { $eq: data._id } }).toArray();
+            if (respp.length > 0) {
                 const message = `Already added`
                 return res.send({ acknowledged: false, message })
             }
@@ -64,7 +64,7 @@ async function run() {
 
         })
 
-        app.get('/getadvertisement', async (req,res) => {
+        app.get('/getadvertisement', async (req, res) => {
             const query = {};
             const result = await advertiseCollection.find(query).toArray();
             res.send(result);
@@ -96,60 +96,68 @@ async function run() {
             res.send(total);
         })
 
-        app.get('/allbuyers', async (req,res) => {
-            const filter = { role: "Buyer"}
+        app.get('/allbuyers', async (req, res) => {
+            const filter = { role: "Buyer" }
             const result = await usersCollection.find(filter).toArray()
             res.send(result);
         })
 
-        app.delete('/buyerDelete', async (req,res) => {
+        app.delete('/buyerDelete', async (req, res) => {
             const id = req.query.id;
-            const filter = {_id: ObjectId(id)}
+            const filter = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(filter)
             res.send(result);
         })
 
-        app.post('/report', async (req,res) => {
+        app.post('/report', async (req, res) => {
             const data = req.body;
             console.log(data._id);
-            const respp = await reportCollection.find({_id: {$eq: data._id}}).toArray();
-            if(respp.length > 0) {
+            const respp = await reportCollection.find({ _id: { $eq: data._id } }).toArray();
+            if (respp.length > 0) {
                 const message = `Already added`
                 return res.send({ acknowledged: false, message })
             }
             const result = await reportCollection.insertOne(data)
         })
-        app.get('/report', async (req,res) => {
+        app.get('/report', async (req, res) => {
             const query = {}
             const result = await reportCollection.find(query).toArray();
             res.send(result)
         })
-        app.delete('/reportdelete', async (req,res) => {
+        app.delete('/fridgedelete', async (req, res) => {
             const id = req.query.id;
-            console.log(id);
-            const filter = {_id: id}
-            console.log(filter);
-            const result = await reportCollection.deleteOne(filter)
+            // console.log(id);
+            const filter = { _id: ObjectId(id) }
+            const total = await fridgeCollection.deleteOne(filter);
+            // const result = await reportCollection.deleteOne(filter);
+            res.send(total);
+        })
+        app.delete('/reportdelete', async (req, res) => {
+            const id = req.query.id;
+            // console.log(id);
+            const filter = { _id: id }
+            // const total = await fridgeCollection.deleteOne(filter);
+            const result = await reportCollection.deleteOne(filter);
             res.send(result);
         })
 
-        app.get('/allsellers', async (req,res) => {
-            const filter = { role: "Seller"}
+        app.get('/allsellers', async (req, res) => {
+            const filter = { role: "Seller" }
             const result = await usersCollection.find(filter).toArray()
             res.send(result);
         })
 
-        app.delete('/sellerDelete', async (req,res) => {
+        app.delete('/sellerDelete', async (req, res) => {
             const id = req.query.id;
-            const filter = {_id: ObjectId(id)}
+            const filter = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(filter)
             res.send(result);
         })
 
-        app.get('/currentusers', async (req,res) => {
+        app.get('/currentusers', async (req, res) => {
             const email = req.query.email
             // console.log(email);
-            const query = {email: email}
+            const query = { email: email }
             const result = await usersCollection.findOne(query)
             res.send(result)
         })
