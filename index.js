@@ -20,6 +20,7 @@ async function run() {
         const fridgeCollection = client.db('puranaBazar').collection('AllFridge')
         const usersCollection = client.db('puranaBazar').collection('users')
         const advertiseCollection = client.db('puranaBazar').collection('advertise')
+        const reportCollection = client.db('puranaBazar').collection('reportList')
 
         app.get('/category/:id', async (req, res) => {
             const ID = req.params.id;
@@ -39,7 +40,7 @@ async function run() {
             const item = req.body;
             // const query = {}
             const result = await fridgeCollection.insertOne(item)
-            console.log(result);
+            // console.log(result);
         })
 
         app.get('/myproducts', async (req,res) => {
@@ -49,15 +50,24 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/advertisement', async (req,res) => {
-            const id = req.query.id;
-            const filter = {
-                _id: id
+        
+        app.post('/advertisementpost', async (req,res) => {
+            const data = req.body;
+            // console.log(data._id);
+            const respp = await advertiseCollection.find({_id: {$eq: data._id}}).toArray();
+            if(respp.length > 0) {
+                const message = `Already added`
+                return res.send({ acknowledged: false, message })
             }
-            const result = await fridgeCollection.find(filter);
-            const total = await advertiseCollection.insertOne(result);
+            const total = await advertiseCollection.insertOne(data);
             res.send(total);
 
+        })
+
+        app.get('/getadvertisement', async (req,res) => {
+            const query = {};
+            const result = await advertiseCollection.find(query).toArray();
+            res.send(result);
         })
 
         app.post('/users', async (req, res) => {
@@ -66,7 +76,7 @@ async function run() {
                 email: user.email
             }
             const alreadyAdd = await usersCollection.find(query).toArray();
-            console.log(alreadyAdd);
+            // console.log(alreadyAdd);
             if (alreadyAdd.length >= 0) {
                 const message = `Already added`
                 return res.send({ acknowledged: false, message })
@@ -78,11 +88,11 @@ async function run() {
 
         app.get('/users', async (req, res) => {
             const emailQ = req.query.email
-            console.log(emailQ);
+            // console.log(emailQ);
             // const options = { upsert: true }
             const query = { email: emailQ }
             const total = await usersCollection.findOne(query)
-            console.log(total);
+            // console.log(total);
             res.send(total);
         })
 
@@ -98,6 +108,18 @@ async function run() {
             const result = await usersCollection.deleteOne(filter)
             res.send(result);
         })
+
+        app.post('/report', async (req,res) => {
+            const data = req.body;
+            console.log(data._id);
+            const respp = await reportCollection.find({_id: {$eq: data._id}}).toArray();
+            if(respp.length > 0) {
+                const message = `Already added`
+                return res.send({ acknowledged: false, message })
+            }
+            const result = await reportCollection.insertOne(data)
+        })
+
         app.get('/allsellers', async (req,res) => {
             const filter = { role: "Seller"}
             const result = await usersCollection.find(filter).toArray()
@@ -113,7 +135,7 @@ async function run() {
 
         app.get('/currentusers', async (req,res) => {
             const email = req.query.email
-            console.log(email);
+            // console.log(email);
             const query = {email: email}
             const result = await usersCollection.findOne(query)
             res.send(result)
