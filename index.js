@@ -119,6 +119,19 @@ async function run() {
             }
             const result = await reportCollection.insertOne(data)
         })
+        app.get('/report', async (req,res) => {
+            const query = {}
+            const result = await reportCollection.find(query).toArray();
+            res.send(result)
+        })
+        app.delete('/reportdelete', async (req,res) => {
+            const id = req.query.id;
+            console.log(id);
+            const filter = {_id: id}
+            console.log(filter);
+            const result = await reportCollection.deleteOne(filter)
+            res.send(result);
+        })
 
         app.get('/allsellers', async (req,res) => {
             const filter = { role: "Seller"}
