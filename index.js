@@ -77,7 +77,7 @@ async function run() {
             }
             const alreadyAdd = await usersCollection.find(query).toArray();
             // console.log(alreadyAdd);
-            if (alreadyAdd.length >= 0) {
+            if (alreadyAdd.length > 0) {
                 const message = `Already added`
                 return res.send({ acknowledged: false, message })
             }
@@ -154,6 +154,18 @@ async function run() {
             res.send(result);
         })
 
+        app.patch('/sellerVerify', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    verify: "true"
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
+
         app.get('/currentusers', async (req, res) => {
             const email = req.query.email
             // console.log(email);
@@ -161,7 +173,6 @@ async function run() {
             const result = await usersCollection.findOne(query)
             res.send(result)
         })
-
     }
     finally {
 
