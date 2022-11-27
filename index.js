@@ -86,6 +86,21 @@ async function run() {
             res.send(result);
         })
 
+        app.patch('/usersverify', async (req,res) => {
+            const email = req.query.email;
+            console.log(email);
+            const filter = {
+                sellerEmail: email
+            }
+            const updatedDoc = {
+                $set: {
+                    verify_user: "true"
+                }
+            }
+            const result = await fridgeCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
         app.get('/users', async (req, res) => {
             const emailQ = req.query.email
             // console.log(emailQ);
