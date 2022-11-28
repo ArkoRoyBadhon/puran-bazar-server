@@ -111,7 +111,7 @@ async function run() {
             // console.log(result);
         })
 
-        app.get('/myproducts', verifyJWT, async (req, res) => {
+        app.get('/myproducts', async (req, res) => {
             const email = req.query.email
             const query = { sellerEmail: email }
             const result = await fridgeCollection.find(query).toArray();
@@ -179,7 +179,7 @@ async function run() {
             const result = await fridgeCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
-        app.patch('/fridgestock', verifyJWT, async (req, res) => {
+        app.patch('/fridgestock', async (req, res) => {
             const id = req.query.id;
             console.log(id);
             const filter = {
@@ -287,6 +287,7 @@ async function run() {
 
         app.post('/bookings', verifyJWT, async (req, res) => {
             const info = req.body;
+            console.log(info);
             const query = {}
             const result = await bookingsCollection.insertOne(info);
             res.send(result);
