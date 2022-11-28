@@ -21,16 +21,17 @@ async function run() {
         const usersCollection = client.db('puranaBazar').collection('users')
         const advertiseCollection = client.db('puranaBazar').collection('advertise')
         const reportCollection = client.db('puranaBazar').collection('reportList')
+        const bookingsCollection = client.db('puranaBazar').collection('bookings')
 
         app.get('/category/:id', async (req, res) => {
             const ID = req.params.id;
             const intId = parseInt(ID)
             let query;
             if (intId === 4) {
-                query = {}
+                query = {stock: 'available'}
             }
             else {
-                query = { category: intId }
+                query = { category: intId, stock: 'available' }
             }
             const allFridge = await fridgeCollection.find(query).toArray();
             res.send(allFridge);
@@ -100,6 +101,20 @@ async function run() {
             const result = await fridgeCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
+        app.patch('/fridgestock', async (req,res) => {
+            const id = req.query.id;
+            console.log(id);
+            const filter = {
+                _id: ObjectId(id)
+            }
+            const updatedDoc = {
+                $set: {
+                    stock: "sold"
+                }
+            }
+            const result = await fridgeCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
 
         app.get('/users', async (req, res) => {
             const emailQ = req.query.email
@@ -133,6 +148,7 @@ async function run() {
                 return res.send({ acknowledged: false, message })
             }
             const result = await reportCollection.insertOne(data)
+            res.send(result)
         })
         app.get('/report', async (req, res) => {
             const query = {}
@@ -155,6 +171,14 @@ async function run() {
             const result = await reportCollection.deleteOne(filter);
             res.send(result);
         })
+        // app.delete('/myproductdelete', async (req, res) => {
+        //     const id = req.query.id;
+        //     // console.log(id);
+        //     const filter = { _id: id }
+        //     // const total = await fridgeCollection.deleteOne(filter);
+        //     const result = await .deleteOne(filter);
+        //     res.send(result);
+        // })
 
         app.get('/allsellers', async (req, res) => {
             const filter = { role: "Seller" }
@@ -187,6 +211,20 @@ async function run() {
             const query = { email: email }
             const result = await usersCollection.findOne(query)
             res.send(result)
+        })
+
+        app.post('/bookings', async (req,res) => {
+            const info = req.body;
+            const query = {}
+            const result = await bookingsCollection.insertOne(info);
+            res.send(result);
+        })
+
+        app.get('/bookings', async (req,res) => {
+            const email = req.query.email;
+            const query = {email: email}
+            const result = await bookingsCollection.find(query).toArray();
+            res.send(result);
         })
     }
     finally {
