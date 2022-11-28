@@ -6,6 +6,8 @@ require('dotenv').config();
 const port = process.env.PORT || 5000
 
 
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
+
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -40,9 +42,42 @@ async function run() {
         const advertiseCollection = client.db('puranaBazar').collection('advertise')
         const reportCollection = client.db('puranaBazar').collection('reportList')
         const bookingsCollection = client.db('puranaBazar').collection('bookings')
-        
-        
-       
+        const paymentsCollection = client.db('puranaBazar').collection('payments')
+
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                "payment_method_types": [
+                    "card"
+                ],
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        })
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            const id = payment.bookingId;
+            const filter = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updateResult = await bookingsCollection.updateOne(filter, updatedDoc)
+            res.send(result)
+        })
+
+
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
@@ -84,7 +119,7 @@ async function run() {
         })
 
 
-        app.post('/advertisementpost', verifyJWT,  async (req, res) => {
+        app.post('/advertisementpost', verifyJWT, async (req, res) => {
             const data = req.body;
             // console.log(data._id);
             const respp = await advertiseCollection.find({ _id: { $eq: data._id } }).toArray();
@@ -130,7 +165,7 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/usersverify',verifyJWT, async (req, res) => {
+        app.patch('/usersverify', verifyJWT, async (req, res) => {
             const email = req.query.email;
             console.log(email);
             const filter = {
@@ -194,12 +229,12 @@ async function run() {
             const result = await reportCollection.insertOne(data)
             res.send(result)
         })
-        app.get('/report',verifyJWT, async (req, res) => {
+        app.get('/report', verifyJWT, async (req, res) => {
             const query = {}
             const result = await reportCollection.find(query).toArray();
             res.send(result)
         })
-        app.delete('/fridgedelete', verifyJWT,  async (req, res) => {
+        app.delete('/fridgedelete', verifyJWT, async (req, res) => {
             const id = req.query.id;
             // console.log(id);
             const filter = { _id: ObjectId(id) }
@@ -269,6 +304,13 @@ async function run() {
             const filter = { email: email }
             const result = await bookingsCollection.find(filter).toArray();
             res.send(result);
+        })
+
+        app.get('/bookings/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const booking = await bookingsCollection.findOne(query);
+            res.send(booking);
         })
     }
     finally {
